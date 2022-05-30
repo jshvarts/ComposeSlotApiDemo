@@ -7,6 +7,9 @@ android {
     compileSdk 32
 
     defaultConfig {
+
+        buildConfigField "String", "TMDB_API_KEY", "\"" + propOrDef("TMDB_API_KEY", "") + "\""
+
         applicationId "com.example.composeslotapidemo"
         minSdk 23
         targetSdk 32
