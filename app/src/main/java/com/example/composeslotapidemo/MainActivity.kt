@@ -112,12 +112,12 @@ fun HomeSection(
     } else {
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
+        modifier = modifier
           .fillMaxWidth()
       ) {
         SectionTitle(
           title = title,
-          modifier = Modifier
+          modifier = modifier
             .alignByBaseline()
         )
         SectionFilter(
