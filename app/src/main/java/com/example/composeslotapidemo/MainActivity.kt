@@ -95,13 +95,7 @@ fun HomeSection(
   content: @Composable () -> Unit
 ) {
   Column(modifier) {
-    Text(
-      text = stringResource(id = title).uppercase(Locale.getDefault()),
-      style = MaterialTheme.typography.h6,
-      modifier = Modifier
-        .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
-        .padding(horizontal = 16.dp)
-    )
+    SectionTitle(title)
     content()
   }
 }
@@ -163,6 +157,17 @@ fun AnimationMovieList(homeViewModel: HomeViewModel) {
       PosterImage(movie)
     }
   }
+}
+
+@Composable
+fun SectionTitle(@StringRes title: Int) {
+  Text(
+    text = stringResource(id = title).uppercase(Locale.getDefault()),
+    style = MaterialTheme.typography.h6,
+    modifier = Modifier
+      .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
+      .padding(horizontal = 16.dp)
+  )
 }
 
 @Composable
