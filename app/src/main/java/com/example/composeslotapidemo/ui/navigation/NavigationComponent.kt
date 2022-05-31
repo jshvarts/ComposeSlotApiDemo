@@ -10,13 +10,13 @@ import com.example.composeslotapidemo.HomeScreen
 import com.example.composeslotapidemo.HomeViewModel
 
 @Composable
-fun Navigation(
+fun NavigationComponent(
   navController: NavHostController,
   homeViewModel: HomeViewModel
 ) {
   NavHost(navController, startDestination = Screen.Home.route) {
     composable(Screen.Home.route) {
-      HomeScreen(homeViewModel)
+      HomeScreen(homeViewModel, navController)
     }
     composable(Screen.ActionMovies.route) {
       ActionMoviesScreen(homeViewModel)

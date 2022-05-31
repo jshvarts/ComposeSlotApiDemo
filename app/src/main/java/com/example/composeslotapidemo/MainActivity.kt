@@ -1,21 +1,21 @@
 package com.example.composeslotapidemo
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,27 +26,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.example.composeslotapidemo.ui.navigation.NavigationComponent
+import com.example.composeslotapidemo.ui.navigation.Screen
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
-
-private const val POSTER_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w342/"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
   private val homeViewModel by viewModels<HomeViewModel>()
 
+  @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
+      val navController = rememberNavController()
       ComposeSlotApiDemoTheme {
-        Surface(
-          modifier = Modifier.fillMaxSize(),
-          color = MaterialTheme.colors.background
-        ) {
-          HomeScreen(homeViewModel)
+        Scaffold {
+          NavigationComponent(
+            navController = navController,
+            homeViewModel = homeViewModel
+          )
         }
       }
     }
@@ -56,6 +60,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(
   homeViewModel: HomeViewModel,
+  navController: NavController,
   modifier: Modifier = Modifier
 ) {
   Column(
@@ -66,21 +71,27 @@ fun HomeScreen(
   ) {
     Spacer(Modifier.height(16.dp))
 
-    Text(
-      text = stringResource(id = R.string.screen_title_home),
-      style = MaterialTheme.typography.h3,
-      modifier = Modifier.padding(horizontal = 16.dp)
-    )
+    ScreenTitle(R.string.screen_title_home)
 
     HomeSection(title = R.string.section_title_top_rated) {
       TopRatedMovieList(homeViewModel = homeViewModel)
     }
 
-    HomeSection(title = R.string.section_title_action) {
+    HomeSection(
+      title = R.string.section_title_action,
+      filterInfo = HomeSectionFilterInfo {
+        navController.navigate(Screen.ActionMovies.route)
+      }
+    ) {
       ActionMovieList(homeViewModel = homeViewModel)
     }
 
-    HomeSection(title = R.string.section_title_animation) {
+    HomeSection(
+      title = R.string.section_title_animation,
+      filterInfo = HomeSectionFilterInfo {
+        navController.navigate(Screen.AnimationMovies.route)
+      }
+    ) {
       AnimationMovieList(homeViewModel = homeViewModel)
     }
 
@@ -91,11 +102,34 @@ fun HomeScreen(
 @Composable
 fun HomeSection(
   @StringRes title: Int,
+  filterInfo: HomeSectionFilterInfo? = null,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit
 ) {
-  Column(modifier) {
-    SectionTitle(title)
+  Column(
+    modifier
+      .padding(horizontal = 16.dp)
+  ) {
+    if (filterInfo == null) {
+      SectionTitle(title)
+    } else {
+      Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+          .fillMaxWidth()
+      ) {
+        SectionTitle(
+          title = title,
+          modifier = Modifier
+            .alignByBaseline()
+        )
+        SectionFilter(
+          filterInfo = filterInfo,
+          modifier = Modifier
+            .alignByBaseline()
+        )
+      }
+    }
     content()
   }
 }
@@ -114,7 +148,7 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
     )
   ) {
     items(movies) { movie ->
-      PosterImage(movie)
+      HomePosterImage(movie)
     }
   }
 }
@@ -133,7 +167,7 @@ fun ActionMovieList(homeViewModel: HomeViewModel) {
     )
   ) {
     items(movies) { movie ->
-      PosterImage(movie)
+      HomePosterImage(movie)
     }
   }
 }
@@ -154,26 +188,50 @@ fun AnimationMovieList(homeViewModel: HomeViewModel) {
       .height(340.dp)
   ) {
     items(movies) { movie ->
-      PosterImage(movie)
+      HomePosterImage(movie)
     }
   }
 }
 
 @Composable
-fun SectionTitle(@StringRes title: Int) {
+fun ScreenTitle(@StringRes title: Int) {
   Text(
-    text = stringResource(id = title).uppercase(Locale.getDefault()),
-    style = MaterialTheme.typography.h6,
-    modifier = Modifier
-      .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
-      .padding(horizontal = 16.dp)
+    text = stringResource(id = title),
+    style = MaterialTheme.typography.h4,
+    modifier = Modifier.padding(horizontal = 16.dp)
   )
 }
 
 @Composable
-fun PosterImage(movie: Movie) {
+fun SectionTitle(
+  @StringRes title: Int,
+  modifier: Modifier = Modifier
+) {
+  Text(
+    text = stringResource(id = title).uppercase(Locale.getDefault()),
+    style = MaterialTheme.typography.h6,
+    modifier = modifier
+      .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
+  )
+}
+
+@Composable
+fun SectionFilter(
+  filterInfo: HomeSectionFilterInfo,
+  modifier: Modifier = Modifier
+) {
+  Text(
+    text = stringResource(id = filterInfo.text),
+    style = MaterialTheme.typography.h6,
+    modifier = modifier
+      .clickable { filterInfo.onClick() }
+  )
+}
+
+@Composable
+fun HomePosterImage(movie: Movie) {
   AsyncImage(
-    model = POSTER_IMAGE_BASE_URL + movie.posterPath,
+    model = movie.posterUrl,
     contentDescription = movie.title,
     contentScale = ContentScale.Crop,
     placeholder = painterResource(id = R.drawable.poster_placeholder),
@@ -183,20 +241,82 @@ fun PosterImage(movie: Movie) {
 }
 
 @Composable
-fun ActionMoviesScreen(homeViewModel: HomeViewModel) {
-  Text(
-    text = stringResource(id = R.string.screen_title_action_movies),
-    style = MaterialTheme.typography.h3,
-    modifier = Modifier.padding(horizontal = 16.dp)
+fun GenrePosterImage(movie: Movie) {
+  AsyncImage(
+    model = movie.posterUrl,
+    contentDescription = movie.title,
+    contentScale = ContentScale.Crop,
+    placeholder = painterResource(id = R.drawable.poster_placeholder)
   )
 }
 
 @Composable
-fun AnimationMoviesScreen(homeViewModel: HomeViewModel) {
-  Text(
-    text = stringResource(id = R.string.screen_title_animation_movies),
-    style = MaterialTheme.typography.h3,
-    modifier = Modifier.padding(horizontal = 16.dp)
-  )
+fun ActionMoviesScreen(homeViewModel: HomeViewModel) {
+  val movies by homeViewModel.actionMovies.collectAsState()
+
+  LazyVerticalGrid(
+    columns = GridCells.Adaptive(100.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
+    contentPadding = PaddingValues(
+      top = 16.dp,
+      bottom = 16.dp
+    )
+  ) {
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      ScreenTitle(R.string.screen_title_action_movies)
+    }
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(8.dp))
+    }
+
+    items(movies) { movie ->
+      GenrePosterImage(movie)
+    }
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(16.dp))
+    }
+  }
 }
 
+@Composable
+fun AnimationMoviesScreen(
+  homeViewModel: HomeViewModel
+) {
+  val movies by homeViewModel.animationMovies.collectAsState()
+
+  LazyVerticalGrid(
+    columns = GridCells.Adaptive(100.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
+    contentPadding = PaddingValues(
+      top = 16.dp,
+      bottom = 16.dp
+    )
+  ) {
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      ScreenTitle(R.string.screen_title_animation_movies)
+    }
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(8.dp))
+    }
+
+    items(movies) { movie ->
+      GenrePosterImage(movie)
+    }
+
+    item(span = { GridItemSpan(maxLineSpan) }) {
+      Spacer(Modifier.height(16.dp))
+    }
+  }
+}
+
+data class HomeSectionFilterInfo(
+  @StringRes val text: Int = R.string.section_filter_text_default,
+  val onClick: () -> Unit
+)
