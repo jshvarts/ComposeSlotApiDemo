@@ -7,8 +7,13 @@ import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -18,14 +23,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
-import com.skydoves.landscapist.coil.CoilImage
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
-private const val POSTER_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500/"
+private const val POSTER_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w342/"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -52,7 +58,14 @@ fun HomeScreen(
   homeViewModel: HomeViewModel,
   modifier: Modifier = Modifier
 ) {
-  Column(modifier.padding(vertical = 16.dp)) {
+  Column(
+    modifier
+      .verticalScroll(
+        rememberScrollState()
+      )
+  ) {
+    Spacer(Modifier.height(16.dp))
+
     Text(
       text = stringResource(id = R.string.screen_title_home),
       style = MaterialTheme.typography.h3,
@@ -70,6 +83,8 @@ fun HomeScreen(
     HomeSection(title = R.string.section_title_animation) {
       AnimationMovieList(homeViewModel = homeViewModel)
     }
+
+    Spacer(Modifier.height(16.dp))
   }
 }
 
@@ -82,9 +97,9 @@ fun HomeSection(
   Column(modifier) {
     Text(
       text = stringResource(id = title).uppercase(Locale.getDefault()),
-      style = MaterialTheme.typography.h5,
+      style = MaterialTheme.typography.h6,
       modifier = Modifier
-        .paddingFromBaseline(top = 42.dp, bottom = 16.dp)
+        .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
         .padding(horizontal = 16.dp)
     )
     content()
@@ -96,6 +111,8 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
   val movies by homeViewModel.topRatedMovies.collectAsState()
 
   LazyRow(
+    modifier = Modifier
+      .height(210.dp),
     horizontalArrangement = Arrangement.spacedBy(8.dp),
     contentPadding = PaddingValues(
       start = 16.dp,
@@ -103,12 +120,7 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
     )
   ) {
     items(movies) { movie ->
-      CoilImage(
-        imageModel = POSTER_IMAGE_BASE_URL + movie.posterPath,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-          .clip(shape = RoundedCornerShape(16.dp))
-      )
+      PosterImage(movie)
     }
   }
 }
@@ -117,9 +129,17 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
 fun ActionMovieList(homeViewModel: HomeViewModel) {
   val movies by homeViewModel.actionMovies.collectAsState()
 
-  LazyRow {
+  LazyRow(
+    modifier = Modifier
+      .height(160.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    contentPadding = PaddingValues(
+      start = 16.dp,
+      end = 16.dp
+    )
+  ) {
     items(movies) { movie ->
-      Text(movie.title)
+      PosterImage(movie)
     }
   }
 }
@@ -128,11 +148,33 @@ fun ActionMovieList(homeViewModel: HomeViewModel) {
 fun AnimationMovieList(homeViewModel: HomeViewModel) {
   val movies by homeViewModel.animationMovies.collectAsState()
 
-  LazyRow {
+  LazyHorizontalGrid(
+    rows = GridCells.Fixed(2),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
+    contentPadding = PaddingValues(
+      start = 16.dp,
+      end = 16.dp
+    ),
+    modifier = Modifier
+      .height(340.dp)
+  ) {
     items(movies) { movie ->
-      Text(movie.title)
+      PosterImage(movie)
     }
   }
+}
+
+@Composable
+fun PosterImage(movie: Movie) {
+  AsyncImage(
+    model = POSTER_IMAGE_BASE_URL + movie.posterPath,
+    contentDescription = movie.title,
+    contentScale = ContentScale.Crop,
+    placeholder = painterResource(id = R.drawable.poster_placeholder),
+    modifier = Modifier
+      .clip(shape = RoundedCornerShape(16.dp))
+  )
 }
 
 @Composable
