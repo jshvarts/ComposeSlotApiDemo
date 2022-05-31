@@ -106,12 +106,9 @@ fun HomeSection(
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit
 ) {
-  Column(
-    modifier
-      .padding(horizontal = 16.dp)
-  ) {
+  Column {
     if (filterInfo == null) {
-      SectionTitle(title)
+      SectionTitle(title = title)
     } else {
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -139,8 +136,6 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
   val movies by homeViewModel.topRatedMovies.collectAsState()
 
   LazyRow(
-    modifier = Modifier
-      .height(210.dp),
     horizontalArrangement = Arrangement.spacedBy(8.dp),
     contentPadding = PaddingValues(
       start = 16.dp,
@@ -211,7 +206,8 @@ fun SectionTitle(
     text = stringResource(id = title).uppercase(Locale.getDefault()),
     style = MaterialTheme.typography.h6,
     modifier = modifier
-      .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
+      .paddingFromBaseline(top = 46.dp, bottom = 8.dp)
+      .padding(start = 16.dp)
   )
 }
 
@@ -224,6 +220,7 @@ fun SectionFilter(
     text = stringResource(id = filterInfo.text),
     style = MaterialTheme.typography.h6,
     modifier = modifier
+      .padding(end = 16.dp)
       .clickable { filterInfo.onClick() }
   )
 }
