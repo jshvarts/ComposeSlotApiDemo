@@ -5,12 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -18,11 +16,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
+import com.skydoves.landscapist.coil.CoilImage
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+
+private const val POSTER_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500/"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -81,7 +84,7 @@ fun HomeSection(
       text = stringResource(id = title).uppercase(Locale.getDefault()),
       style = MaterialTheme.typography.h5,
       modifier = Modifier
-        .paddingFromBaseline(top = 42.dp, bottom = 8.dp)
+        .paddingFromBaseline(top = 42.dp, bottom = 16.dp)
         .padding(horizontal = 16.dp)
     )
     content()
@@ -92,9 +95,20 @@ fun HomeSection(
 fun TopRatedMovieList(homeViewModel: HomeViewModel) {
   val movies by homeViewModel.topRatedMovies.collectAsState()
 
-  LazyRow {
+  LazyRow(
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    contentPadding = PaddingValues(
+      start = 16.dp,
+      end = 16.dp
+    )
+  ) {
     items(movies) { movie ->
-      Text(movie.title)
+      CoilImage(
+        imageModel = POSTER_IMAGE_BASE_URL + movie.posterPath,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier
+          .clip(shape = RoundedCornerShape(16.dp))
+      )
     }
   }
 }
