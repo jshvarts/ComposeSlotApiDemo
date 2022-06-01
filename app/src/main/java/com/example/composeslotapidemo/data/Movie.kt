@@ -1,4 +1,4 @@
-package com.example.composeslotapidemo
+package com.example.composeslotapidemo.data
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

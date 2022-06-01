@@ -2,6 +2,9 @@ package com.example.composeslotapidemo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.composeslotapidemo.data.Movie
+import com.example.composeslotapidemo.data.MovieGenre
+import com.example.composeslotapidemo.data.MovieRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

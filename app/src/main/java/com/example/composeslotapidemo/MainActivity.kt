@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import com.example.composeslotapidemo.data.Movie
 import com.example.composeslotapidemo.ui.navigation.NavigationComponent
 import com.example.composeslotapidemo.ui.navigation.Screen
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
@@ -79,7 +80,7 @@ fun HomeScreen(
 
     HomeSection(
       title = R.string.section_title_action,
-      filterInfo = HomeSectionFilterInfo {
+      filter = SectionFilter {
         navController.navigate(Screen.ActionMovies.route)
       }
     ) {
@@ -88,7 +89,7 @@ fun HomeScreen(
 
     HomeSection(
       title = R.string.section_title_animation,
-      filterInfo = HomeSectionFilterInfo {
+      filter = SectionFilter {
         navController.navigate(Screen.AnimationMovies.route)
       }
     ) {
@@ -102,12 +103,12 @@ fun HomeScreen(
 @Composable
 fun HomeSection(
   @StringRes title: Int,
-  filterInfo: HomeSectionFilterInfo? = null,
+  filter: SectionFilter? = null,
   modifier: Modifier = Modifier,
   content: @Composable () -> Unit
 ) {
   Column {
-    if (filterInfo == null) {
+    if (filter == null) {
       SectionTitle(title = title)
     } else {
       Row(
@@ -120,8 +121,8 @@ fun HomeSection(
           modifier = modifier
             .alignByBaseline()
         )
-        SectionFilter(
-          filterInfo = filterInfo,
+        SectionFilterButton(
+          filter = filter,
           modifier = Modifier
             .alignByBaseline()
         )
@@ -212,16 +213,16 @@ fun SectionTitle(
 }
 
 @Composable
-fun SectionFilter(
-  filterInfo: HomeSectionFilterInfo,
+fun SectionFilterButton(
+  filter: SectionFilter,
   modifier: Modifier = Modifier
 ) {
   Text(
-    text = stringResource(id = filterInfo.text),
+    text = stringResource(id = filter.text),
     style = MaterialTheme.typography.h6,
     modifier = modifier
       .padding(end = 16.dp)
-      .clickable { filterInfo.onClick() }
+      .clickable { filter.onClick() }
   )
 }
 
@@ -313,7 +314,7 @@ fun AnimationMoviesScreen(
   }
 }
 
-data class HomeSectionFilterInfo(
+data class SectionFilter(
   @StringRes val text: Int = R.string.section_filter_text_default,
   val onClick: () -> Unit
 )

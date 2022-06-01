@@ -1,5 +1,7 @@
 package com.example.composeslotapidemo
 
+import com.example.composeslotapidemo.data.Api
+import com.example.composeslotapidemo.data.ReposJsonConverter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module

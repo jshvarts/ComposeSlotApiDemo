@@ -1,4 +1,4 @@
-package com.example.composeslotapidemo
+package com.example.composeslotapidemo.data
 
 enum class MovieGenre(val id: String) {
   ACTION("28"),

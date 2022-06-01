@@ -1,5 +1,6 @@
-package com.example.composeslotapidemo
+package com.example.composeslotapidemo.data
 
+import com.example.composeslotapidemo.data.Movie
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.JsonQualifier
 import com.squareup.moshi.ToJson

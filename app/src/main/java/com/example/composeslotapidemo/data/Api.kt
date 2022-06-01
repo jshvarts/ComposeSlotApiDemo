@@ -1,4 +1,4 @@
-package com.example.composeslotapidemo
+package com.example.composeslotapidemo.data
 
 import retrofit2.http.GET
 import retrofit2.http.Query
