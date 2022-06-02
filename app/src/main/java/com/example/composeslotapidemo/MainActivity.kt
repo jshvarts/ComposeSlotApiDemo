@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,22 +13,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.composeslotapidemo.data.Movie
+import com.example.composeslotapidemo.data.MovieGenre
+import com.example.composeslotapidemo.ui.GenreViewModel
+import com.example.composeslotapidemo.ui.HomeViewModel
 import com.example.composeslotapidemo.ui.navigation.NavigationComponent
 import com.example.composeslotapidemo.ui.navigation.Screen
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
@@ -39,8 +45,6 @@ import java.util.*
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-  private val homeViewModel by viewModels<HomeViewModel>()
-
   @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -48,10 +52,7 @@ class MainActivity : ComponentActivity() {
       val navController = rememberNavController()
       ComposeSlotApiDemoTheme {
         Scaffold {
-          NavigationComponent(
-            navController = navController,
-            homeViewModel = homeViewModel
-          )
+          NavigationComponent(navController = navController)
         }
       }
     }
@@ -60,43 +61,49 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(
-  homeViewModel: HomeViewModel,
   navController: NavController,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  homeViewModel: HomeViewModel = hiltViewModel()
 ) {
-  Column(
-    modifier
-      .verticalScroll(
-        rememberScrollState()
-      )
-  ) {
-    Spacer(Modifier.height(16.dp))
+  val state by homeViewModel.uiState.collectAsState()
 
-    ScreenTitle(R.string.screen_title_home)
-
-    HomeSection(title = R.string.section_title_top_rated) {
-      TopRatedMovieList(homeViewModel = homeViewModel)
-    }
-
-    HomeSection(
-      title = R.string.section_title_action,
-      filter = SectionFilter {
-        navController.navigate(Screen.ActionMovies.route)
-      }
+  if (state.isLoading) {
+    LoadingIndicator()
+  } else {
+    Column(
+      modifier
+        .verticalScroll(
+          rememberScrollState()
+        )
     ) {
-      ActionMovieList(homeViewModel = homeViewModel)
-    }
+      Spacer(Modifier.height(16.dp))
 
-    HomeSection(
-      title = R.string.section_title_animation,
-      filter = SectionFilter {
-        navController.navigate(Screen.AnimationMovies.route)
+      ScreenTitle(R.string.screen_title_home)
+
+      HomeSection(title = R.string.section_title_top_rated) {
+        TopRatedMovieList(state.topRatedMovies)
       }
-    ) {
-      AnimationMovieList(homeViewModel = homeViewModel)
-    }
 
-    Spacer(Modifier.height(16.dp))
+      HomeSection(
+        title = R.string.section_title_action,
+        filter = SectionFilter {
+          navController.navigate(Screen.ActionMovies.route)
+        }
+      ) {
+        ActionMovieList(state.actionMovies)
+      }
+
+      HomeSection(
+        title = R.string.section_title_animation,
+        filter = SectionFilter {
+          navController.navigate(Screen.AnimationMovies.route)
+        }
+      ) {
+        AnimationMovieList(state.animationMovies)
+      }
+
+      Spacer(Modifier.height(16.dp))
+    }
   }
 }
 
@@ -133,8 +140,7 @@ fun HomeSection(
 }
 
 @Composable
-fun TopRatedMovieList(homeViewModel: HomeViewModel) {
-  val movies by homeViewModel.topRatedMovies.collectAsState()
+fun TopRatedMovieList(movies: List<Movie>) {
 
   LazyRow(
     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -150,9 +156,7 @@ fun TopRatedMovieList(homeViewModel: HomeViewModel) {
 }
 
 @Composable
-fun ActionMovieList(homeViewModel: HomeViewModel) {
-  val movies by homeViewModel.actionMovies.collectAsState()
-
+fun ActionMovieList(movies: List<Movie>) {
   LazyRow(
     modifier = Modifier
       .height(160.dp),
@@ -169,9 +173,7 @@ fun ActionMovieList(homeViewModel: HomeViewModel) {
 }
 
 @Composable
-fun AnimationMovieList(homeViewModel: HomeViewModel) {
-  val movies by homeViewModel.animationMovies.collectAsState()
-
+fun AnimationMovieList(movies: List<Movie>) {
   LazyHorizontalGrid(
     rows = GridCells.Fixed(2),
     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -249,68 +251,92 @@ fun GenrePosterImage(movie: Movie) {
 }
 
 @Composable
-fun ActionMoviesScreen(homeViewModel: HomeViewModel) {
-  val movies by homeViewModel.actionMovies.collectAsState()
+fun ActionMoviesScreen(viewModel: GenreViewModel = hiltViewModel()) {
+  LaunchedEffect(Unit) {
+    viewModel.fetchMovies(MovieGenre.ACTION)
+  }
 
-  LazyVerticalGrid(
-    columns = GridCells.Adaptive(100.dp),
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp),
-    contentPadding = PaddingValues(
-      top = 16.dp,
-      bottom = 16.dp
-    )
-  ) {
+  val state by viewModel.uiState.collectAsState()
+  if (state.isLoading) {
+    LoadingIndicator()
+  } else {
+    LazyVerticalGrid(
+      columns = GridCells.Adaptive(100.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+      contentPadding = PaddingValues(
+        top = 16.dp,
+        bottom = 16.dp
+      )
+    ) {
 
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      ScreenTitle(R.string.screen_title_action_movies)
-    }
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        ScreenTitle(R.string.screen_title_action_movies)
+      }
 
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Spacer(Modifier.height(8.dp))
-    }
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        Spacer(Modifier.height(8.dp))
+      }
 
-    items(movies) { movie ->
-      GenrePosterImage(movie)
-    }
+      items(state.movies) { movie ->
+        GenrePosterImage(movie)
+      }
 
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Spacer(Modifier.height(16.dp))
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        Spacer(Modifier.height(16.dp))
+      }
     }
   }
 }
 
 @Composable
-fun AnimationMoviesScreen(
-  homeViewModel: HomeViewModel
-) {
-  val movies by homeViewModel.animationMovies.collectAsState()
+fun AnimationMoviesScreen(viewModel: GenreViewModel = hiltViewModel()) {
+  val state by viewModel.uiState.collectAsState()
 
-  LazyVerticalGrid(
-    columns = GridCells.Adaptive(100.dp),
-    horizontalArrangement = Arrangement.spacedBy(8.dp),
-    verticalArrangement = Arrangement.spacedBy(8.dp),
-    contentPadding = PaddingValues(
-      top = 16.dp,
-      bottom = 16.dp
-    )
+  LaunchedEffect(Unit) {
+    viewModel.fetchMovies(MovieGenre.ANIMATION)
+  }
+
+  if (state.isLoading) {
+    LoadingIndicator()
+  } else {
+    LazyVerticalGrid(
+      columns = GridCells.Adaptive(100.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+      contentPadding = PaddingValues(
+        top = 16.dp,
+        bottom = 16.dp
+      )
+    ) {
+
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        ScreenTitle(R.string.screen_title_animation_movies)
+      }
+
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        Spacer(Modifier.height(8.dp))
+      }
+
+      items(state.movies) { movie ->
+        GenrePosterImage(movie)
+      }
+
+      item(span = { GridItemSpan(maxLineSpan) }) {
+        Spacer(Modifier.height(16.dp))
+      }
+    }
+  }
+}
+
+@Composable
+fun LoadingIndicator(modifier: Modifier = Modifier) {
+  Box(
+    modifier = modifier
+      .fillMaxSize()
+      .wrapContentSize(Alignment.Center)
   ) {
-
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      ScreenTitle(R.string.screen_title_animation_movies)
-    }
-
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Spacer(Modifier.height(8.dp))
-    }
-
-    items(movies) { movie ->
-      GenrePosterImage(movie)
-    }
-
-    item(span = { GridItemSpan(maxLineSpan) }) {
-      Spacer(Modifier.height(16.dp))
-    }
+    CircularProgressIndicator()
   }
 }
 

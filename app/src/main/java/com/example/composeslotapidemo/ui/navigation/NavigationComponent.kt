@@ -7,22 +7,18 @@ import androidx.navigation.compose.composable
 import com.example.composeslotapidemo.ActionMoviesScreen
 import com.example.composeslotapidemo.AnimationMoviesScreen
 import com.example.composeslotapidemo.HomeScreen
-import com.example.composeslotapidemo.HomeViewModel
 
 @Composable
-fun NavigationComponent(
-  navController: NavHostController,
-  homeViewModel: HomeViewModel
-) {
+fun NavigationComponent(navController: NavHostController) {
   NavHost(navController, startDestination = Screen.Home.route) {
     composable(Screen.Home.route) {
-      HomeScreen(homeViewModel, navController)
+      HomeScreen(navController)
     }
     composable(Screen.ActionMovies.route) {
-      ActionMoviesScreen(homeViewModel)
+      ActionMoviesScreen()
     }
     composable(Screen.AnimationMovies.route) {
-      AnimationMoviesScreen(homeViewModel)
+      AnimationMoviesScreen()
     }
   }
 }

@@ -1,14 +1,20 @@
 package com.example.composeslotapidemo.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class MovieRepository @Inject constructor(private val api: Api) {
 
-  suspend fun getTopRatedMovies(): Result<List<Movie>> {
-    return runCatching { api.getTopRated() }
+  fun getTopRatedMovies(): Flow<List<Movie>> {
+    return flow {
+      emit(api.getTopRated())
+    }
   }
 
-  suspend fun getMovies(genre: MovieGenre): Result<List<Movie>> {
-    return runCatching { api.getMoviesForGenre(genre.id) }
+  fun getMovies(genre: MovieGenre): Flow<List<Movie>> {
+    return flow {
+      emit(api.getMoviesForGenre(genre.id))
+    }
   }
 }
