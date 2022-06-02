@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -340,7 +341,35 @@ fun LoadingIndicator(modifier: Modifier = Modifier) {
   }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun TopRatedMovieListPreview() {
+  TopRatedMovieList(getFakeMovieList())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActionMovieListPreview() {
+  ActionMovieList(getFakeMovieList())
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AnimationMovieListPreview() {
+  AnimationMovieList(getFakeMovieList())
+}
+
 data class SectionFilter(
   @StringRes val text: Int = R.string.section_filter_text_default,
   val onClick: () -> Unit
+)
+
+private fun getFakeMovieList() = listOf(
+  Movie("", ""),
+  Movie("", ""),
+  Movie("", ""),
+  Movie("", ""),
+  Movie("", ""),
+  Movie("", ""),
+  Movie("", "")
 )
