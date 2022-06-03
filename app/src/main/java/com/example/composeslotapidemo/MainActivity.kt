@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.composeslotapidemo.data.Movie
 import com.example.composeslotapidemo.data.MovieGenre
 import com.example.composeslotapidemo.ui.GenreViewModel
@@ -232,7 +234,10 @@ fun SectionFilterButton(
 @Composable
 fun HomePosterImage(movie: Movie) {
   AsyncImage(
-    model = movie.posterUrl,
+    model = ImageRequest.Builder(LocalContext.current)
+      .data(movie.posterUrl)
+      .crossfade(true)
+      .build(),
     contentDescription = movie.title,
     contentScale = ContentScale.Crop,
     placeholder = painterResource(id = R.drawable.poster_placeholder),
@@ -244,7 +249,10 @@ fun HomePosterImage(movie: Movie) {
 @Composable
 fun GenrePosterImage(movie: Movie) {
   AsyncImage(
-    model = movie.posterUrl,
+    model = ImageRequest.Builder(LocalContext.current)
+      .data(movie.posterUrl)
+      .crossfade(true)
+      .build(),
     contentDescription = movie.title,
     contentScale = ContentScale.Crop,
     placeholder = painterResource(id = R.drawable.poster_placeholder)
@@ -333,9 +341,9 @@ fun AnimationMoviesScreen(viewModel: GenreViewModel = hiltViewModel()) {
 @Composable
 fun LoadingIndicator(modifier: Modifier = Modifier) {
   Box(
+    contentAlignment = Alignment.Center,
     modifier = modifier
       .fillMaxSize()
-      .wrapContentSize(Alignment.Center)
   ) {
     CircularProgressIndicator()
   }
