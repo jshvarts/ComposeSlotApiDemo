@@ -1,6 +1,5 @@
 package com.example.composeslotapidemo
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,10 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -39,8 +36,8 @@ import com.example.composeslotapidemo.data.Movie
 import com.example.composeslotapidemo.data.MovieGenre
 import com.example.composeslotapidemo.ui.GenreViewModel
 import com.example.composeslotapidemo.ui.HomeViewModel
-import com.example.composeslotapidemo.ui.navigation.NavigationComponent
 import com.example.composeslotapidemo.ui.navigation.Screen
+import com.example.composeslotapidemo.ui.navigation.SlotApiDemoNavHost
 import com.example.composeslotapidemo.ui.theme.ComposeSlotApiDemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
@@ -48,14 +45,19 @@ import java.util.*
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-  @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
       val navController = rememberNavController()
       ComposeSlotApiDemoTheme {
-        Scaffold {
-          NavigationComponent(navController = navController)
+        Surface(color = Color.Blue) {
+        }
+        Scaffold { paddingValues ->
+          SlotApiDemoNavHost(
+            navController = navController,
+            modifier = Modifier
+              .padding(paddingValues)
+          )
         }
       }
     }
